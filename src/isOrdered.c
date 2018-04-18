@@ -30,11 +30,13 @@ SEXP do_is_ordered (SEXP x, SEXP increasing, SEXP strictly)
   int nx = LENGTH(x) - 1;
   double *real_x;
   int *int_x;
+  printf("isordered\n");
 
   if(TYPEOF(x) == REALSXP) {
   /*
   Check for increasing order, strict or non-strict
   */
+    printf("real\n");
   real_x = REAL(x);
   if(LOGICAL(increasing)[ 0 ] == 1) { /* INCREASING */
     if(LOGICAL(strictly)[ 0 ] == 1) { /* STRICTLY INCREASING ( > 0 ) */
@@ -74,9 +76,11 @@ SEXP do_is_ordered (SEXP x, SEXP increasing, SEXP strictly)
   /*
   Check for increasing order, strict or non-strict
   */
+    printf("int\n");
   int_x = INTEGER(x);
   if(LOGICAL(increasing)[ 0 ] == 1) { /* INCREASING */
     /* Not increasing order if first element is NA */
+    printf("%i", int_x[0]);
     if( int_x[0] == NA_INTEGER )
       return ScalarLogical(0);
 
