@@ -43,3 +43,56 @@ test.xts_order.by_Inf_double <- function() {
   checkException(xts(1:3, .POSIXct(c(-Inf, 2, 3))))
 }
 ### }}}
+
+checkXtsClass <- function(xts, class) {
+  checkEquals(attr(xts, "tclass"), class)
+  checkEquals(attr(xts, ".indexCLASS"), class)
+  checkEquals(attr(attr(xts, "index"), "tclass"), class)
+}
+
+### Check that .indexCLASS takes precedence over tclass when both specified
+test..xts_class <- function() {
+  checkXtsClass(.xts(1, 1), c("POSIXct", "POSIXt"))
+  checkXtsClass(.xts(1, 1, tclass="timeDate"), "timeDate")
+  checkXtsClass(.xts(1, 1, .indexCLASS="Date"), "Date")
+  checkXtsClass(.xts(1, 1, tclass="timeDate", .indexCLASS="Date"), "Date")
+
+  ## also check that tclass is ignored if specified as part of index
+  checkXtsClass(.xts(1, structure(1, tzone="",tclass="yearmon")), c("POSIXct", "POSIXt"))
+  checkXtsClass(.xts(1, structure(1, tzone="",tclass="yearmon"), tclass="timeDate"), "timeDate")
+  checkXtsClass(.xts(1, structure(1, tzone="",tclass="yearmon"), .indexCLASS="Date"), "Date")
+  checkXtsClass(.xts(1, structure(1, tzone="",tclass="yearmon"), tclass="timeDate", .indexCLASS="Date"), "Date")
+}
+
+checkXtsTz <- function(xts, tzone, .indexTZ) {
+  checkEquals(attr(xts, "tzone"), tzone)
+  checkEquals(attr(xts, ".indexTZ"), .indexTZ)
+  checkEquals(attr(attr(xts, "index"), "tzone"), tzone)
+}
+
+.setUp <- function() {
+  Sys.setenv(TZ="UTC")
+}
+
+### Check that tzone is honoured and .indexTZ ignored
+test..xts_tzone <- function() {
+  checkXtsTz(.xts(1, 1), "UTC", "UTC")
+  checkXtsTz(.xts(1, 1, tzone="Europe/London"), "Europe/London", "Europe/London")
+  ## this case passes in 0.10-2 but looks wrong
+  checkXtsTz(.xts(1, 1, .indexTZ="America/New_York"), "UTC", "America/New_York")
+  ## this case passes in 0.10-2 but looks wrong
+  checkXtsTz(.xts(1, 1, tzone="Europe/London", .indexTZ="America/New_York"),
+             "Europe/London", "America/New_York")
+
+  ## Cases where tzone is specified in the index
+  checkXtsTz(.xts(1, structure(1, tzone="Asia/Tokyo",tclass="yearmon")),
+             "Asia/Tokyo", "Asia/Tokyo")
+  checkXtsTz(.xts(1, structure(1, tzone="Asia/Tokyo",tclass="yearmon"), tzone="Europe/London"),
+             "Europe/London", "Europe/London")
+  ## this case passes in 0.10-2 but looks wrong
+  checkXtsTz(.xts(1, structure(1, tzone="Asia/Tokyo",tclass="yearmon"), .indexTZ="America/New_York"),
+             "Asia/Tokyo", "America/New_York")
+  ## this case passes in 0.10-2 but looks wrong
+  checkXtsTz(.xts(1, structure(1, tzone="Asia/Tokyo",tclass="yearmon"), tzone="Europe/London", .indexTZ="America/New_York"),
+             "Europe/London", "America/New_York")
+}
